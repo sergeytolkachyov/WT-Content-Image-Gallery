@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension type="package" method="upgrade">
+	<name>WT Content Image gallery package</name>
+	<author>Sergey Tolkachyov</author>
+	<creationDate>25/08/2023</creationDate>
+	<packagename>pkgwtcontentimagegallery</packagename>
+	<version>1.0.0</version>
+	<url>https://web-tolk.ru/</url>
+	<packager>Sergey Tolkachyov</packager>
+	<packagerurl>https://web-tolk.ru</packagerurl>
+	<description>PKG_PKGWTCONTENTIMAGEGALLERY_DESC</description>
+	<license>GNU GPL 3.0</license>
+	<scriptfile>pkg_script.php</scriptfile>
+	<languages>
+		<language tag="en-GB">language/en-GB/pkg_pkgwtcontentimagegallery.sys.ini</language>
+		<language tag="ru-RU">language/ru-RU/pkg_pkgwtcontentimagegallery.sys.ini</language>
+	</languages>
+	<files>
+	   <folder type="plugin" id="wtcontentimagegallery" group="content">wtcontentimagegallery</folder>
+	   <folder type="plugin" id="wtcontentimagegalleryeditorsxtd" group="editors-xtd">wtcontentimagegalleryeditorsxtd</folder>
+	</files>
+	<updateservers>
+      <server type="extension" priority="1" name="WT Content Image Gallery updates">https://web-tolk.ru/component/swjprojects/jupdate?element=pkgwtcontentimagegallery</server>
+	</updateservers>
+	<changelogurl>https://web-tolk.ru/jchangelog?element=pkgwtcontentimagegallery</changelogurl>
+</extension>
