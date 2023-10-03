@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.0.0
+ * @version       1.1.0
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -39,12 +39,20 @@ $unique = str_replace(['-','.'],'_',$context).'_' . $iterator;
 	<?php foreach ($images as $image) :?>
 		<div class="col mb-3">
 			<?php
+			if ($image['type'] == 'image')
+			{
 				$img_attribs = [
 					'class' => 'img-fluid',
 					//'data-title' => 'You can specify any other image attribute like array key and value',
-					'id' => $context.'-'.$iterator
+					'id'    => $context . '-' . $iterator
 				];
 				echo HTMLHelper::image($image['img_src'], $image['img_alt'], $img_attribs);
+			} elseif ($image['type'] == 'video') {
+				?>
+                <video class="img-fluid" controls="controls" muted="muted" loop="loop" autoplay="autoplay"
+                       src="<?php echo $image['video_src']; ?>" poster="<?php echo $image['video_poster']; ?>"/>
+				<?php
+			}
 			?>
 		</div>
 	<?php endforeach; ?>

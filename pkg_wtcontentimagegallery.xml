@@ -2,9 +2,9 @@
 <extension type="package" method="upgrade">
 	<name>WT Content Image gallery package</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>25/08/2023</creationDate>
+	<creationDate>October 2023</creationDate>
 	<packagename>pkgwtcontentimagegallery</packagename>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<url>https://web-tolk.ru/</url>
 	<packager>Sergey Tolkachyov</packager>
 	<packagerurl>https://web-tolk.ru</packagerurl>

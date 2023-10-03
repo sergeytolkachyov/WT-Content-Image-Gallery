@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.0.0
+ * @version       1.1.0
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -45,12 +45,15 @@ $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
 $wa->usePreset('lightbox2')->useScript('jquery');
 
 // Will be like "com_content_article_0"
-$unique = str_replace(['-','.'],'_',$context).'_' . $iterator;
+$unique = str_replace(['-', '.'], '_', $context) . '_' . $iterator;
 
 ?>
-    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5">
-		<?php foreach ($images as $image) : ?>
-            <a href="<?php echo $image['img_src'];?>" data-lightbox="<?php echo $unique; ?>" class="col mb-3">
+<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5">
+	<?php foreach ($images as $image) :
+
+		if ($image['type'] == 'image') :
+			?>
+            <a href="<?php echo $image['img_src']; ?>" data-lightbox="<?php echo $unique; ?>" class="col mb-3">
 				<?php
 				$img_attribs = [
 					'class' => 'img-fluid',
@@ -60,5 +63,12 @@ $unique = str_replace(['-','.'],'_',$context).'_' . $iterator;
 				echo HTMLHelper::image($image['img_src'], $image['img_alt'], $img_attribs);
 				?>
             </a>
-		<?php endforeach; ?>
-    </div>
+		<?php
+        elseif ($image['type'] == 'video') : ?>
+            <a href="<?php echo $image['img_src']; ?>" data-lightbox="<?php echo $unique; ?>" class="col mb-3">
+                <video class="img-fluid" controls="controls" muted="muted" loop="loop" autoplay="autoplay"
+                       src="<?php echo $image['video_src']; ?>" poster="<?php echo $image['video_poster']; ?>"/>
+            </a>
+		<?php endif;
+	endforeach; ?>
+</div>

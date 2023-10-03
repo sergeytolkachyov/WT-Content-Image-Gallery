@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.0.0
+ * @version       1.1.0
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -42,7 +42,7 @@ $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
  */
 $wa->useScript('swiper-bundle')->useStyle('swiper-bundle');
 
-$unique = str_replace(['-','.'],'_',$context).'_' . $iterator;
+$unique = str_replace(['-', '.'], '_', $context) . '_' . $iterator;
 
 ?>
 <script>
@@ -99,29 +99,35 @@ $unique = str_replace(['-','.'],'_',$context).'_' . $iterator;
 
 </script>
 <!-- Slider main container -->
-<div class="swiper<?php echo $unique;?> swiper">
+<div class="swiper<?php echo $unique; ?> swiper">
     <!-- Additional required wrapper -->
     <div class="swiper-wrapper">
 		<?php foreach ($images as $image) : ?>
             <div class="swiper-slide">
 				<?php
-				$img_attribs = [
-					'class' => 'img-fluid',
-					//'data-title' => 'You can specify any other image attribute like array key and value',
-					//'id' => ''
-				];
-				echo HTMLHelper::image($image['img_src'], $image['img_alt'], $img_attribs);
-				?>
+
+				if ($image['type'] == 'image') :
+					$img_attribs = [
+						'class' => 'img-fluid',
+						//'data-title' => 'You can specify any other image attribute like array key and value',
+						//'id' => ''
+					];
+					echo HTMLHelper::image($image['img_src'], $image['img_alt'], $img_attribs);
+                elseif ($image['type'] == 'video') :
+					?>
+                    <video class="img-fluid" controls="controls" muted="muted" loop="loop" autoplay="autoplay"
+                           src="<?php echo $image['video_src']; ?>" poster="<?php echo $image['video_poster']; ?>"/>
+				<?php endif; ?>
             </div>
 		<?php endforeach; ?>
     </div>
     <!-- If we need pagination -->
-    <div class="swiper-pagination swiper-pagination_<?php echo $unique;?>"></div>
+    <div class="swiper-pagination swiper-pagination_<?php echo $unique; ?>"></div>
 
     <!-- If we need navigation buttons -->
-    <div class="swiper-button-prev swiper-button-prev_<?php echo $unique;?>"></div>
-    <div class="swiper-button-next swiper-button-next_<?php echo $unique;?>"></div>
+    <div class="swiper-button-prev swiper-button-prev_<?php echo $unique; ?>"></div>
+    <div class="swiper-button-next swiper-button-next_<?php echo $unique; ?>"></div>
 
     <!-- If we need scrollbar -->
-    <div class="swiper-scrollbar swiper-scrollbar_<?php echo $unique;?>"></div>
+    <div class="swiper-scrollbar swiper-scrollbar_<?php echo $unique; ?>"></div>
 </div>

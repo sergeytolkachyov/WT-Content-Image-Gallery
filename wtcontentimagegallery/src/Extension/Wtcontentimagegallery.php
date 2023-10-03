@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.0.0
+ * @version       1.1.0
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -12,229 +12,280 @@ namespace Joomla\Plugin\Content\Wtcontentimagegallery\Extension;
 
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Filesystem\Path;
-use Joomla\CMS\Layout\FileLayout;
-use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\Uri\Uri;
 use Joomla\Event\Event;
-use Joomla\Registry\Registry;
-use Joomla\String\StringHelper;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\Utility\Utility;
 use Joomla\Event\SubscriberInterface;
 
 
 class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
 {
-	/**
-	 * Load the language file on instantiation.
-	 *
-	 * @var    boolean
-	 *
-	 * @since  3.9.0
-	 */
-	protected $autoloadLanguage = true;
-	protected $allowLegacyListeners = false;
+    /**
+     * Load the language file on instantiation.
+     *
+     * @var    boolean
+     *
+     * @since  3.9.0
+     */
+    protected $autoloadLanguage = true;
+    protected $allowLegacyListeners = false;
 
-	public $iterator = 0;
+    public $iterator = 0;
 
-	/**
-	 * @inheritDoc
-	 *
-	 * @return string[]
-	 *
-	 * @throws Exception
-	 * @since 4.1.0
-	 *
-	 */
-	public static function getSubscribedEvents(): array
-	{
-		$app = Factory::getApplication();
+    /**
+     * @inheritDoc
+     *
+     * @return string[]
+     *
+     * @throws \Exception
+     * @since 4.1.0
+     *
+     */
+    public static function getSubscribedEvents(): array
+    {
 
-		$mapping = [];
-
-		if ($app->isClient('site'))
-		{
-			$mapping['onContentPrepare'] = 'onContentPrepare';
-
-		}
-
-		return $mapping;
-	}
+        return [
+            'onContentPrepare' => 'onContentPrepare'
+        ];
+    }
 
 
-	/**
-	 * Plugin that adds a pagebreak into the text and truncates text at that point
-	 *
-	 * @param   string    $context  The context of the content being passed to the plugin.
-	 * @param   object   &$row      The article object.  Note $article->text is also available
-	 * @param   mixed    &$params   The article params
-	 * @param   integer   $page     The 'page' number
-	 *
-	 * @return  void
-	 *
-	 * @since   1.6
-	 */
-	public function onContentPrepare(Event $event)
-	{
+    /**
+     *
+     * @param string $context The context of the content being passed to the plugin.
+     * @param object   &$row The article object.  Note $article->text is also available
+     * @param mixed    &$params The article params
+     * @param integer $page The 'page' number
+     *
+     * @return  void
+     *
+     * @since   1.6
+     */
+    public function onContentPrepare(Event $event) : void
+    {
 
-		$context = $event->getArgument(0);
-		$row     = $event->getArgument(1);
+        $context = $event->getArgument(0);
+        $row = $event->getArgument(1);
 
 
-		if ($context === 'com_finder.indexer') {
-			return;
-		}
+        if ($context === 'com_finder.indexer') {
+            return;
+        }
 
-		if (!is_object($row) || !property_exists($row, 'text') || is_null($row->text)) {
-			return;
-		}
+        if (!is_object($row) || !property_exists($row, 'text') || is_null($row->text)) {
+            return;
+        }
 
-		// expression to search for
-		$regex = "#{gallery\s(.*?)}(.*?){/gallery}#is";
+        // expression to search for
+        $regex = "#{gallery\s(.*?)}(.*?){/gallery}#is";
 
-		// Expression to search for shortcode without tmpl param
-		$regex2 = "#{gallery}(.*?){/gallery}#is";
+        // Expression to search for shortcode without tmpl param
+        $regex2 = "#{gallery}(.*?){/gallery}#is";
 
-		// Find all instances of plugin and put in $matches.
-		$matches  = [];
-		$matches2 = [];
-		preg_match_all($regex, $row->text, $matches, PREG_SET_ORDER);
-		preg_match_all($regex2, $row->text, $matches2, PREG_SET_ORDER);
+        // Find all instances of plugin and put in $matches.
+        $matches = [];
+        $matches2 = [];
+        preg_match_all($regex, $row->text, $matches, PREG_SET_ORDER);
+        preg_match_all($regex2, $row->text, $matches2, PREG_SET_ORDER);
 
-		/**
-		 * Process shorcodes with tmpl param
-		 */
-		if (!empty($matches))
-		{
-			$this->processImages($matches, $context, $row, 2);
-		}
-		/**
-		 * Process shorcodes without tmpl param
-		 */
-		if (!empty($matches2))
-		{
-			$this->processImages($matches2, $context, $row, 1);
-		}
-	}
+        /**
+         * Process shorcodes with tmpl param
+         */
+        if (!empty($matches)) {
+            $this->processImages($matches, $context, $row, 2);
+        }
+        /**
+         * Process shorcodes without tmpl param
+         */
+        if (!empty($matches2)) {
+            $this->processImages($matches2, $context, $row, 1);
+        }
+    }
 
-	/**
-	 * @param $matches array Matches array from preg_match_all
-	 * @param $context string Context string like <b>com_content.article</b>
-	 * @param $row object Article object
-	 * @param $type int Type 1 - shortcode <b>without tmpl</b> param, type 2 - <b>with tmpl</b> param
-	 *
-	 *
-	 * @since 1.0.0
-	 */
-	public function processImages($matches, $context, &$row, $type = 2) : void
-	{
+    /**
+     * @param $matches array Matches array from preg_match_all
+     * @param $context string Context string like <b>com_content.article</b>
+     * @param $row object Article object
+     * @param $type int Type 1 - shortcode <b>without tmpl</b> param, type 2 - <b>with tmpl</b> param
+     *
+     *
+     * @since 1.0.0
+     */
+    public function processImages($matches, $context, &$row, $type = 2): void
+    {
+        $image_file_allowed_extensions = ['bmp', 'gif', 'jpeg', 'jpe', 'jpg', 'png', 'tiff', 'tif', 'webp', 'avif', 'heif', 'heifs', 'heic', 'heics'];
+        $video_file_allowed_extensions = ['mp4', 'webm', 'ogv'];
 
-		foreach ($matches as $match)
-		{
-			$tmpl = $this->params->get('default_layout_for_default','default');
-			if (strpos($match[1], 'tmpl') !== false)
-			{
-				$tmpl_array = explode('=', $match[1]);
-				$tmpl       = $tmpl_array[1];
-			}
+        foreach ($matches as $match) {
+            $tmpl = $this->params->get('default_layout_for_default', 'default');
+            if (strpos($match[1], 'tmpl') !== false) {
+                $tmpl_array = explode('=', $match[1]);
+                $tmpl = $tmpl_array[1];
+            }
 
-			$img_array = [];
-			$images    = [];
-			// Список путей к картинкам вида
-			// images/photo1.jpg,images/photo2.jpg,images/photo3.jpg,
-			// Через запятую. В других вариантах запятых быть не может.
+            $img_array = [];
+            $images = [];
+            // Список путей к картинкам вида
+            // images/photo1.jpg,images/photo2.jpg,images/photo3.jpg,images/video.mp4,
+            // Через запятую. В других вариантах запятых быть не может.
 
-			$match[$type] = strip_tags($match[$type], ['img']);
+            // Убираем все теги, кроме <img> и <video>
+            $match[$type] = strip_tags($match[$type], ['img', 'video']);
 
-			if (strpos($match[$type], ',') !== false && strpos($match[$type], '<img') === false)
-			{
-				$img_array = explode(',', trim($match[$type]));
+            if (strpos($match[$type], ',') !== false && strpos($match[$type], '<img') === false) {
+                $img_array = explode(',', trim($match[$type]));
+                foreach ($img_array as $img_file_path) {
+                    $img_file_path = trim($img_file_path);
 
-				foreach ($img_array as $img_file_path)
-				{
-					$img_file_path = trim($img_file_path);
+                    if (File::exists(JPATH_SITE . '/' . $img_file_path)) {
 
-					if (File::exists(JPATH_SITE . '/' . $img_file_path))
-					{
-						$images[] = [
-							'img_src' => $img_file_path,
-							'img_alt' => File::stripExt(basename($img_file_path))
-						];
-					}
-				}
-			}
-			elseif (strpos($match[$type], '<img') !== false)
-			{
-				// Картинки вида <img src="" />
+                        $file_extension = File::getExt(basename($img_file_path));
+                        if (in_array($file_extension, $image_file_allowed_extensions)) {
+                            // Это картинка
+                            $images[] = [
+                                'img_src' => trim($img_file_path),
+                                'img_alt' => File::stripExt(basename($img_file_path)),
+                                'type' => 'image'
+                            ];
+                        }
 
-				// Создаем объект DOMDocument
-				$dom = new \DOMDocument();
-				$dom->loadHTML('<?xml encoding="utf-8" ?>' . $match[$type]);
-				// Получаем все теги <img>
-				$domImages = $dom->getElementsByTagName('img');
+                        if (in_array($file_extension, $video_file_allowed_extensions)) {
+                            $poster = '';
+                            // Ищем poster для этого видео. Имя файла должно быть такое же, как у видеофайла
+                            $path = dirname(JPATH_SITE . '/' . $img_file_path);
+                            $img_files = Folder::files($path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
+                            foreach ($img_files as $img_file) {
+                                $poster_filename = File::stripExt($img_file);
+                                if($poster_filename == File::stripExt(basename($img_file_path)))
+                                {
+                                    $poster =  dirname($img_file_path).'/'.$img_file;
+                                    break;
+                                }
+                            }
 
-				foreach ($domImages as $domImage)
-				{
-					$src = $domImage->getAttribute('src');
+                            // Это видео
+                            $images[] = [
+                                'video_src' => trim($img_file_path),
+                                'video_poster' => $poster,
+                                'type' => 'video'
+                            ];
+                        }
+                    }
+                }
+            } elseif (strpos($match[$type], '<img') !== false || strpos($match[$type], '<video') !== false) {
+                // Картинки вида <img src="" />
+                // Видео вида <video src="" poster="" />
 
-					if (empty($src))
-					{
-						continue;
-					}
+                // Создаем объект DOMDocument
+                $dom = new \DOMDocument();
+                // fix html5/svg errors
+                $dom->loadHTML('<?xml encoding="UTF-8">' . $match[$type], LIBXML_NOERROR); // LIBXML_NOERROR , LIBXML_NOWARNING
 
-					if (!empty($domImage->getAttribute('alt')))
-					{
-						$alt = $domImage->getAttribute('alt');
-					}
-					else
-					{
-						$alt = File::stripExt($src);
-					}
+                if (strpos($match[$type], '<img') !== false) {
+                    // Получаем все теги <img>
+                    $domImages = $dom->getElementsByTagName('img');
 
-					$images[] = [
-						'img_src' => trim($src),
-						'img_alt' => $alt
-					];
-				}
-			}
-			else
-			{
-				// Указан путь к папке с изображениями.
-				$path = trim($match[$type]);
-				if (Folder::exists(JPATH_SITE . '/' . $path))
-				{
-					$files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(bmp|gif|jpeg|jpe|jpg|png|tiff|tif|webp|avif|heif|heifs|heic|heics)');
-					foreach ($files as $file)
-					{
-						$images[] = [
-							'img_src' => Path::clean($path . '/' . $file),
-							'img_alt' => File::stripExt($file)
-						];
+                    foreach ($domImages as $domImage) {
+                        $src = $domImage->getAttribute('src');
 
-					}
-				}
-			}
+                        if (empty($src)) {
+                            continue;
+                        }
 
-			$iterator = $this->iterator;
-			ob_start();
-			if (file_exists(JPATH_SITE . '/plugins/content/wtcontentimagegallery/tmpl/' . $tmpl . '.php'))
-			{
-				require JPATH_SITE . '/plugins/content/wtcontentimagegallery/tmpl/' . $tmpl . '.php';
-			}
-			else
-			{
-				require JPATH_SITE . '/plugins/content/wtcontentimagegallery/tmpl/default.php';
-			}
-			$html = ob_get_clean();
-			$this->iterator++;
-			$row->text = str_replace($match[0], $html, $row->text);
-		}
-	}
+                        if (!empty($domImage->getAttribute('alt'))) {
+                            $alt = $domImage->getAttribute('alt');
+                        } else {
+                            $alt = File::stripExt($src);
+                        }
+
+                        $images[] = [
+                            'img_src' => trim($src),
+                            'img_alt' => $alt,
+                            'type' => 'image'
+                        ];
+                    }
+                }
+
+                if (strpos($match[$type], '<video') !== false) {
+                    $domVideos = $dom->getElementsByTagName('video');
+
+                    foreach ($domVideos as $domVideo) {
+                        $src = $domVideo->getAttribute('src');
+
+                        if (empty($src)) {
+                            continue;
+                        }
+
+                        $poster = '';
+                        if (!empty($domVideo->getAttribute('poster'))) {
+                            $poster = $domVideo->getAttribute('poster');
+                        }
+
+                        $images[] = [
+                            'video_src' => trim($src),
+                            'video_poster' => $poster,
+                            'type' => 'video'
+                        ];
+                    }
+                }
+
+
+            } else {
+                // Указан путь к папке с изображениями.
+                $path = trim($match[$type]);
+                if (Folder::exists(JPATH_SITE . '/' . $path)) {
+                    $img_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
+                    foreach ($img_files as $file) {
+                        $images[] = [
+                            'img_src' => Path::clean($path . '/' . $file),
+                            'img_alt' => File::stripExt($file),
+                            'type' => 'image'
+                        ];
+
+                    }
+
+                    $video_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $video_file_allowed_extensions) . ')');
+                    foreach ($video_files as $file) {
+
+
+                        $video_filename = File::stripExt($file);
+                        $poster = '';
+                        // we must find a poster image for video and remove it from images list
+                        // poster file must have the same filename as video file
+
+                        foreach ($images as $key => $image) {
+                            if ($image['type'] == 'image' &&
+                                strpos($image['img_src'], $video_filename) !== false
+                            ) {
+                                $img_filename = File::stripExt($image['img_src']);
+                                $img_file_ext = File::getExt($image['img_src']);
+                                $poster = $img_filename . '.' . $img_file_ext;
+                                unset($images[$key]);
+                            }
+                        }
+
+                        $images[] = [
+                            'video_src' => Path::clean($path . '/' . $file),
+                            'video_poster' => $poster,
+                            'type' => 'video'
+                        ];
+                    }
+                }
+            }
+
+            $iterator = $this->iterator;
+            ob_start();
+            if (file_exists(JPATH_SITE . '/plugins/content/wtcontentimagegallery/tmpl/' . $tmpl . '.php')) {
+                require JPATH_SITE . '/plugins/content/wtcontentimagegallery/tmpl/' . $tmpl . '.php';
+            } else {
+                require JPATH_SITE . '/plugins/content/wtcontentimagegallery/tmpl/default.php';
+            }
+            $html = ob_get_clean();
+            $this->iterator++;
+            $row->text = str_replace($match[0], $html, $row->text);
+        }
+    }
 
 }
