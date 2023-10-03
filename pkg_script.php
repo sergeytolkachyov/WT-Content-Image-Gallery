@@ -161,27 +161,27 @@ return new class () implements ServiceProviderInterface {
 				$element = strtoupper($adapter->getElement());
 				$type = strtoupper($type);
 
-				echo "
-				<div class='row bg-white border border-1 shadow-sm m-0 p-2'>
-				<div class='col-12 col-md-8'>
-				<h2>".$smile." ".Text::_($element."_AFTER_".$type)." <br/>".Text::_($element)."</h2>
-				".Text::_($element."_DESC");
-					 
-				echo Text::_($element."_WHATS_NEW");
+				$html = '
+				<div class="row bg-white m-0">
+				<div class="col-12 col-md-8 p-0 pe-2">
+				<h2>'.$smile.' '.Text::_($element.'_AFTER_'.$type).' <br/>'.Text::_($element).'</h2>
+				'.Text::_($element.'_DESC');
 
-				echo "</div>
-				<div class='col-12 col-md-4 d-flex flex-column justify-content-start'>
-				<img width='200px' src='https://web-tolk.ru/web_tolk_logo_wide.png'>
+				$html .= Text::_($element.'_WHATS_NEW');
+
+				$html .= '</div>
+				<div class="col-12 col-md-4 p-0 d-flex flex-column justify-content-start">
+				<img width="180" src="https://web-tolk.ru/web_tolk_logo_wide.png">
 				<p>Joomla Extensions</p>
-				<p class='btn-group'>
-					<a class='btn btn-sm btn-outline-primary' href='https://web-tolk.ru' target='_blank'> https://web-tolk.ru</a>
-					<a class='btn btn-sm btn-outline-primary' href='mailto:info@web-tolk.ru'><i class='icon-envelope'></i> info@web-tolk.ru</a>
+				<p class="btn-group">
+					<a class="btn btn-sm btn-outline-primary" href="https://web-tolk.ru" target="_blank"> https://web-tolk.ru</a>
+					<a class="btn btn-sm btn-outline-primary" href="mailto:info@web-tolk.ru"><i class="icon-envelope"></i> info@web-tolk.ru</a>
 				</p>
-				".Text::_($element."_MAYBE_INTERESTING")."
+				'.Text::_($element."_MAYBE_INTERESTING").'
 				</div>
 
-				";
-
+				';
+				$this->app->enqueueMessage($html, 'info');
 				return true;
 			}
 
