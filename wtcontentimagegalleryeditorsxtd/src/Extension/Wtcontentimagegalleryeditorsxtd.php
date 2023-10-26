@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.1.0
+ * @version       1.2.0
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -169,14 +169,18 @@ final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin
             <textarea class="form-control" id="wtcontentimagegalleryeditorsxtd_images" name="images" placeholder="<?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_IMAGES_TEXTAREA_PLACEHOLDER');?>"></textarea>
         </div>
 
-            <details>
+            <details class="mb-3">
                 <summary><?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_SHORTCODE_LABEL'); ?></summary>
 	            <?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_SHORTCODE_DESC'); ?>
             </details>
 
-        <details class="mb-5">
+        <details class="mb-3">
             <summary><?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_INSERT_IMAGE_LABEL'); ?></summary>
 	        <?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_INSERT_IMAGE_DESC'); ?>
+        </details>
+        <details class="mb-3">
+            <summary><?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_IMAGES_ALT_AND_TITLE_FROM_FILE_LABEL'); ?></summary>
+	        <?php echo Text::_('PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_IMAGES_ALT_AND_TITLE_FROM_FILE_DESC'); ?>
         </details>
 <p></p>
 <p></p>

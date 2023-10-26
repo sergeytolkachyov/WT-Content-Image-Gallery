@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.1.0
+ * @version       1.2.0
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -237,10 +237,47 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                 $path = trim($match[$type]);
                 if (Folder::exists(JPATH_SITE . '/' . $path)) {
                     $img_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
+					$labels = [];
+					if(file_exists(JPATH_SITE . '/' . $path.'/labels.txt')
+						&& filesize(JPATH_SITE . '/' . $path.'/labels.txt') != false
+						&& filesize(JPATH_SITE . '/' . $path.'/labels.txt') > 0 )
+					{
+						$lables_txt = file(JPATH_SITE . '/' . $path.'/labels.txt',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+
+						foreach ($lables_txt as $line)
+						{
+							if(!empty(trim($line)))
+							{
+								// [0] => filename, [1] => alt, [2] => title
+								$image_data = explode('|',$line);
+								$filename = trim($image_data[0]);
+								$alt = '';
+								$title = '';
+								if(isset($image_data[1]) && !empty(trim($image_data[1])))
+								{
+									$alt = trim($image_data[1]);
+								}
+								if(isset($image_data[2]) && !empty(trim($image_data[2])))
+								{
+									$title = trim($image_data[2]);
+								}
+								$labels[$filename] = [
+									'alt' => $alt,
+									'title' => $title,
+								];
+
+							} else {
+								continue;
+							}
+
+						}
+					}
+
                     foreach ($img_files as $file) {
                         $images[] = [
                             'img_src' => Path::clean($path . '/' . $file),
-                            'img_alt' => File::stripExt($file),
+                            'img_alt' => (array_key_exists($file, $labels) && !empty($labels[$file]['alt']) ? $labels[$file]['alt'] : File::stripExt($file)),
+                            'img_title' => (array_key_exists($file, $labels) && !empty($labels[$file]['title']) ? $labels[$file]['title'] : File::stripExt($file)),
                             'type' => 'image'
                         ];
 
