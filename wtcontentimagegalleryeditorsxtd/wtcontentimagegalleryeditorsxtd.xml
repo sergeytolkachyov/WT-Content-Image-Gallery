@@ -2,12 +2,12 @@
 <extension type="plugin" group="editors-xtd" method="upgrade">
 	<name>Editors-xtd - WT Content image gallery button</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>October 2023</creationDate>
+	<creationDate>May 2024</creationDate>
 	<copyright>Copyright (C) Sergey Tolkachyov. All rights reserved.</copyright>
 	<license>GNU General Public License version 3</license>
 	<authorEmail>info@web-tolk.ru</authorEmail>
 	<authorUrl>https://web-tolk.ru</authorUrl>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<description>PLG_WTCONTENTIMAGEGALLERYEDITORSXTD_DESC</description>
 	<namespace path="src">Joomla\Plugin\EditorsXtd\Wtcontentimagegalleryeditorsxtd</namespace>
 	<media folder="media" destination="plg_editors-xtd_wtcontentimagegalleryeditorsxtd">

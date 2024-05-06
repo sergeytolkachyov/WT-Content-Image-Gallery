@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.2.0
+ * @version       1.2.1
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -12,10 +12,10 @@ namespace Joomla\Plugin\Content\Wtcontentimagegallery\Extension;
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Event\Content\ContentPrepareEvent;
 use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Filesystem\Path;
-use Joomla\Event\Event;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\SubscriberInterface;
 
@@ -54,29 +54,35 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
 
     /**
      *
-     * @param string $context The context of the content being passed to the plugin.
-     * @param object   &$row The article object.  Note $article->text is also available
-     * @param mixed    &$params The article params
-     * @param integer $page The 'page' number
+     * @param ContentPrepareEvent $event
      *
      * @return  void
      *
      * @since   1.6
      */
-    public function onContentPrepare(Event $event) : void
-    {
+	public function onContentPrepare(ContentPrepareEvent $event) : void
+	{
+		/**
+		 * @param   string    $context  The context of the content being passed to the plugin.
+		 * @param   object   &$row      The article object.  Note $article->text is also available
+		 * @param   mixed    &$params   The article params
+		 * @param   integer   $page     The 'page' number
+		 */
 
-        $context = $event->getArgument(0);
-        $row = $event->getArgument(1);
+		// Don't run if in the API Application
+		// Don't run this plugin when the content is being indexed
+		$context = $event->getContext();
+		if ($this->getApplication()->isClient('api') || $context === 'com_finder.indexer') {
+			return;
+		}
 
+		// Get content item
+		$row = $event->getItem();
 
-        if ($context === 'com_finder.indexer') {
-            return;
-        }
-
-        if (!is_object($row) || !property_exists($row, 'text') || is_null($row->text)) {
-            return;
-        }
+		// If the item does not have a text property there is nothing to do
+		if (!property_exists($row, 'text')) {
+			return;
+		}
 
         // expression to search for
         $regex = "#{gallery\s(.*?)}(.*?){/gallery}#is";
@@ -115,7 +121,7 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
      */
     public function processImages($matches, $context, &$row, $type = 2): void
     {
-        $image_file_allowed_extensions = ['bmp', 'gif', 'jpeg', 'jpe', 'jpg', 'png', 'tiff', 'tif', 'webp', 'avif', 'heif', 'heifs', 'heic', 'heics'];
+        $image_file_allowed_extensions = ['bmp', 'gif', 'jpeg', 'jpe', 'jpg', 'png', 'tiff', 'tif', 'webp', 'avif', 'heif', 'heifs', 'heic', 'heics', 'svg'];
         $video_file_allowed_extensions = ['mp4', 'webm', 'ogv'];
 
         foreach ($matches as $match) {
