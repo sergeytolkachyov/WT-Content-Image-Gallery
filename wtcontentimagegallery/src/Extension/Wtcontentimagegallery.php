@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @package       WT Content Image gallery
  * @version       1.2.1
@@ -60,29 +61,29 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
      *
      * @since   1.6
      */
-	public function onContentPrepare(ContentPrepareEvent $event) : void
-	{
-		/**
-		 * @param   string    $context  The context of the content being passed to the plugin.
-		 * @param   object   &$row      The article object.  Note $article->text is also available
-		 * @param   mixed    &$params   The article params
-		 * @param   integer   $page     The 'page' number
-		 */
+    public function onContentPrepare(ContentPrepareEvent $event): void
+    {
+        /**
+         * @param   string    $context  The context of the content being passed to the plugin.
+         * @param   object   &$row      The article object.  Note $article->text is also available
+         * @param   mixed    &$params   The article params
+         * @param   integer   $page     The 'page' number
+         */
 
-		// Don't run if in the API Application
-		// Don't run this plugin when the content is being indexed
-		$context = $event->getContext();
-		if ($this->getApplication()->isClient('api') || $context === 'com_finder.indexer') {
-			return;
-		}
+        // Don't run if in the API Application
+        // Don't run this plugin when the content is being indexed
+        $context = $event->getContext();
+        if ($this->getApplication()->isClient('api') || $context === 'com_finder.indexer') {
+            return;
+        }
 
-		// Get content item
-		$row = $event->getItem();
+        // Get content item
+        $row = $event->getItem();
 
-		// If the item does not have a text property there is nothing to do
-		if (!property_exists($row, 'text')) {
-			return;
-		}
+        // If the item does not have a text property there is nothing to do
+        if (!property_exists($row, 'text')) {
+            return;
+        }
 
         // expression to search for
         $regex = "#{gallery\s(.*?)}(.*?){/gallery}#is";
@@ -145,6 +146,10 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                 foreach ($img_array as $img_file_path) {
                     $img_file_path = trim($img_file_path);
 
+                    $img_file_path = !str_starts_with($img_file_path, '/')
+                        ? $img_file_path
+                        : ltrim($img_file_path, '/'); // если путь к папке начинается со слэша, то удаляем его
+
                     if (File::exists(JPATH_SITE . '/' . $img_file_path)) {
 
                         $file_extension = File::getExt(basename($img_file_path));
@@ -164,9 +169,8 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                             $img_files = Folder::files($path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
                             foreach ($img_files as $img_file) {
                                 $poster_filename = File::stripExt($img_file);
-                                if($poster_filename == File::stripExt(basename($img_file_path)))
-                                {
-                                    $poster =  dirname($img_file_path).'/'.$img_file;
+                                if ($poster_filename == File::stripExt(basename($img_file_path))) {
+                                    $poster =  dirname($img_file_path) . '/' . $img_file;
                                     break;
                                 }
                             }
@@ -236,48 +240,46 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                         ];
                     }
                 }
-
-
             } else {
                 // Указан путь к папке с изображениями.
                 $path = trim($match[$type]);
+
+                $path = !str_starts_with($path, '/')
+                    ? $path
+                    : ltrim($path, '/'); // если путь к папке начинается со слэша, то удаляем его
+
                 if (Folder::exists(JPATH_SITE . '/' . $path)) {
                     $img_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
-					$labels = [];
-					if(file_exists(JPATH_SITE . '/' . $path.'/labels.txt')
-						&& filesize(JPATH_SITE . '/' . $path.'/labels.txt') != false
-						&& filesize(JPATH_SITE . '/' . $path.'/labels.txt') > 0 )
-					{
-						$lables_txt = file(JPATH_SITE . '/' . $path.'/labels.txt',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+                    $labels = [];
+                    if (
+                        file_exists(JPATH_SITE . '/' . $path . '/labels.txt')
+                        && filesize(JPATH_SITE . '/' . $path . '/labels.txt') != false
+                        && filesize(JPATH_SITE . '/' . $path . '/labels.txt') > 0
+                    ) {
+                        $lables_txt = file(JPATH_SITE . '/' . $path . '/labels.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-						foreach ($lables_txt as $line)
-						{
-							if(!empty(trim($line)))
-							{
-								// [0] => filename, [1] => alt, [2] => title
-								$image_data = explode('|',$line);
-								$filename = trim($image_data[0]);
-								$alt = '';
-								$title = '';
-								if(isset($image_data[1]) && !empty(trim($image_data[1])))
-								{
-									$alt = trim($image_data[1]);
-								}
-								if(isset($image_data[2]) && !empty(trim($image_data[2])))
-								{
-									$title = trim($image_data[2]);
-								}
-								$labels[$filename] = [
-									'alt' => $alt,
-									'title' => $title,
-								];
-
-							} else {
-								continue;
-							}
-
-						}
-					}
+                        foreach ($lables_txt as $line) {
+                            if (!empty(trim($line))) {
+                                // [0] => filename, [1] => alt, [2] => title
+                                $image_data = explode('|', $line);
+                                $filename = trim($image_data[0]);
+                                $alt = '';
+                                $title = '';
+                                if (isset($image_data[1]) && !empty(trim($image_data[1]))) {
+                                    $alt = trim($image_data[1]);
+                                }
+                                if (isset($image_data[2]) && !empty(trim($image_data[2]))) {
+                                    $title = trim($image_data[2]);
+                                }
+                                $labels[$filename] = [
+                                    'alt' => $alt,
+                                    'title' => $title,
+                                ];
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
 
                     foreach ($img_files as $file) {
                         $images[] = [
@@ -286,7 +288,6 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                             'img_title' => (array_key_exists($file, $labels) && !empty($labels[$file]['title']) ? $labels[$file]['title'] : File::stripExt($file)),
                             'type' => 'image'
                         ];
-
                     }
 
                     $video_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $video_file_allowed_extensions) . ')');
@@ -299,7 +300,8 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                         // poster file must have the same filename as video file
 
                         foreach ($images as $key => $image) {
-                            if ($image['type'] == 'image' &&
+                            if (
+                                $image['type'] == 'image' &&
                                 strpos($image['img_src'], $video_filename) !== false
                             ) {
                                 $img_filename = File::stripExt($image['img_src']);
@@ -330,5 +332,4 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
             $row->text = str_replace($match[0], $html, $row->text);
         }
     }
-
 }
