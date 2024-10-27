@@ -144,11 +144,7 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
             if (strpos($match[$type], ',') !== false && strpos($match[$type], '<img') === false) {
                 $img_array = explode(',', trim($match[$type]));
                 foreach ($img_array as $img_file_path) {
-                    $img_file_path = trim($img_file_path);
-
-                    $img_file_path = !str_starts_with($img_file_path, '/')
-                        ? $img_file_path
-                        : ltrim($img_file_path, '/'); // если путь к папке начинается со слэша, то удаляем его
+                    $img_file_path = ltrim(trim($img_file_path), '/'); // если путь к картинке начинается со слэша, то удаляем его
 
                     if (File::exists(JPATH_SITE . '/' . $img_file_path)) {
 
@@ -242,11 +238,7 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                 }
             } else {
                 // Указан путь к папке с изображениями.
-                $path = trim($match[$type]);
-
-                $path = !str_starts_with($path, '/')
-                    ? $path
-                    : ltrim($path, '/'); // если путь к папке начинается со слэша, то удаляем его
+                $path = ltrim(trim($match[$type]), '/'); // если путь к папке начинается со слэша, то удаляем его
 
                 if (Folder::exists(JPATH_SITE . '/' . $path)) {
                     $img_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
