@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.2.1
+ * @version       1.2.2
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html

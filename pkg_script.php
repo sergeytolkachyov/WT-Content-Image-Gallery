@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.2.1
+ * @version       1.2.2
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -185,7 +185,10 @@ return new class () implements ServiceProviderInterface {
 					<a class="btn btn-sm btn-outline-primary" href="https://web-tolk.ru" target="_blank"> https://web-tolk.ru</a>
 					<a class="btn btn-sm btn-outline-primary" href="mailto:info@web-tolk.ru"><i class="icon-envelope"></i> info@web-tolk.ru</a>
 				</p>
-				<p><a class="btn btn-danger w-100" href="https://t.me/joomlaru" target="_blank">' . Text::_($element . '_JOOMLARU_TELEGRAM_CHAT') . '</a></p>
+				<div class="btn-group-vertical mb-3 web-tolk-btn-links" role="group" aria-label="Joomla community links">
+				<a class="btn btn-danger text-white w-100" href="https://t.me/joomlaru" target="_blank">' . Text::_($element . '_JOOMLARU_TELEGRAM_CHAT') . '</a>
+				<a class="btn btn-primary text-white w-100" href="https://t.me/webtolkru" target="_blank">' . Text::_($element . '_WEBTOLK_TELEGRAM_CHANNEL') . '</a>
+				</div>
 				'.Text::_($element."_MAYBE_INTERESTING").'
 				</div>
 
