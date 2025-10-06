@@ -146,7 +146,7 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                 foreach ($img_array as $img_file_path) {
                     $img_file_path = ltrim(trim($img_file_path), '/'); // если путь к картинке начинается со слэша, то удаляем его
 
-                    if (File::exists(JPATH_SITE . '/' . $img_file_path)) {
+                    if (\file_exists(JPATH_SITE . '/' . $img_file_path)) {
 
                         $file_extension = File::getExt(basename($img_file_path));
                         if (in_array($file_extension, $image_file_allowed_extensions)) {
@@ -240,7 +240,7 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
                 // Указан путь к папке с изображениями.
                 $path = ltrim(trim($match[$type]), '/'); // если путь к папке начинается со слэша, то удаляем его
 
-                if (Folder::exists(JPATH_SITE . '/' . $path)) {
+                if (\is_dir(JPATH_SITE . '/' . $path)) {
                     $img_files = Folder::files(JPATH_SITE . '/' . $path, '^.*\.(' . implode('|', $image_file_allowed_extensions) . ')');
                     $labels = [];
                     if (
