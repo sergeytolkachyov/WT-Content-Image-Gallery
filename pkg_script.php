@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.2.2
+ * @version       1.2.3
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -54,7 +54,7 @@ return new class () implements ServiceProviderInterface {
 			 *
 			 * @since  1.0.0
 			 */
-			protected string $minimumJoomla = '4.3';
+			protected string $minimumJoomla = '5.0.0';
 
 			/**
 			 * Minimum PHP version required to install the extension.
@@ -63,7 +63,7 @@ return new class () implements ServiceProviderInterface {
 			 *
 			 * @since  1.0.0
 			 */
-			protected string $minimumPhp = '7.4';
+			protected string $minimumPhp = '8.1';
 
 			/**
 			 * Constructor.

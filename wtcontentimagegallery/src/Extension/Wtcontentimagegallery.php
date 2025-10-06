@@ -1,8 +1,7 @@
 <?php
-
 /**
  * @package       WT Content Image gallery
- * @version       1.2.2
+ * @version       1.2.3
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -11,15 +10,15 @@
 
 namespace Joomla\Plugin\Content\Wtcontentimagegallery\Extension;
 
-defined('_JEXEC') or die;
-
 use Joomla\CMS\Event\Content\ContentPrepareEvent;
-use Joomla\CMS\Filesystem\File;
-use Joomla\CMS\Filesystem\Folder;
-use Joomla\CMS\Filesystem\Path;
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Folder;
+use Joomla\Filesystem\Path;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\SubscriberInterface;
+use function defined;
 
+defined('_JEXEC') or die;
 
 class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
 {
@@ -31,7 +30,6 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
      * @since  3.9.0
      */
     protected $autoloadLanguage = true;
-    protected $allowLegacyListeners = false;
 
     public $iterator = 0;
 
@@ -129,7 +127,9 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
             $tmpl = $this->params->get('default_layout_for_default', 'default');
             if (strpos($match[1], 'tmpl') !== false) {
                 $tmpl_array = explode('=', $match[1]);
-                $tmpl = $tmpl_array[1];
+	            if($tmpl_array[1] !== 'default') {
+		            $tmpl = $tmpl_array[1];
+	            }
             }
 
             $img_array = [];
@@ -321,7 +321,13 @@ class Wtcontentimagegallery extends CMSPlugin implements SubscriberInterface
             }
             $html = ob_get_clean();
             $this->iterator++;
-            $row->text = str_replace($match[0], $html, $row->text);
+	        $row->text = str_replace($match[0], $html, $row->text);
+			if(property_exists($row,'fulltext')) {
+				$row->fulltext = str_replace($match[0], $html, $row->fulltext);
+			}
+			if(property_exists($row,'introtext')) {
+				$row->introtext = str_replace($match[0], $html, $row->introtext);
+			}
         }
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Content Image gallery
- * @version       1.2.2
+ * @version       1.2.3
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @copyright     Copyright (C) 2023 Sergey Tolkachyov
  * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
@@ -10,26 +10,36 @@
 
 namespace Joomla\Plugin\EditorsXtd\Wtcontentimagegalleryeditorsxtd\Extension;
 
-defined('_JEXEC') or die;
-
+use Joomla\CMS\Editor\Button\Button;
+use Joomla\CMS\Event\Editor\EditorButtonsSetupEvent;
+use Joomla\CMS\Event\Plugin\AjaxEvent;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Filesystem\File;
-use Joomla\CMS\Filesystem\Folder;
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\Object\CMSObject;
-use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\Session\Session;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Session\Session;
+use Joomla\Event\SubscriberInterface;
+use Joomla\Filesystem\File;
+use Joomla\Filesystem\Folder;
 use Joomla\Registry\Registry;
+use Joomla\Uri\Uri;
+
+use function defined;
+
+defined('_JEXEC') or die;
 
 /**
  * Editor Article button
  *
- * @since  1.5
+ * @since  1.0.0
  */
-final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin
+final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin implements SubscriberInterface
 {
+
+    protected $_name = 'wtcontentimagegalleryeditorsxtd';
+    protected $_type = 'editors-xtd';
+
 	/**
 	 * Load the language file on instantiation.
 	 *
@@ -38,20 +48,35 @@ final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin
 	 */
 	protected $autoloadLanguage = true;
 
-	protected $allowLegacyListeners = false;
+	/**
+	 * Returns an array of events this subscriber will listen to.
+	 *
+	 * @return array
+	 *
+	 * @since   5.2.0
+	 */
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			'onEditorButtonsSetup'                  => 'onEditorButtonsSetup',
+			'onAjaxWtcontentimagegalleryeditorsxtd' => 'onAjaxWtcontentimagegalleryeditorsxtd',
+		];
+	}
 
 	/**
-	 * Display the button
+	 * @param  EditorButtonsSetupEvent $event
+	 * @return void
 	 *
-	 * @param   string  $name  The name of the button to add
-	 *
-	 * @return  CMSObject  The button options as CMSObject
-	 *
-	 * @since   1.5
+	 * @since   5.2.0
 	 */
-	public function onDisplay($name)
+	public function onEditorButtonsSetup(EditorButtonsSetupEvent $event): void
 	{
+		$subject  = $event->getButtonsRegistry();
+		$disabled = $event->getDisabledButtons();
 
+		if (\in_array($this->_name, $disabled)) {
+			return;
+		}
 
 		if (!empty(PluginHelper::getPlugin('content', 'wtcontentimagegallery')))
 		{
@@ -78,32 +103,52 @@ final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin
 				return;
 			}
 
-			$link = 'index.php?option=com_ajax&amp;plugin=wtcontentimagegalleryeditorsxtd&amp;group=editors-xtd&amp;format=html&amp;tmpl=component&amp;' . Session::getFormToken() . '=1&amp;editor=' . $name;
+            $url  =  new Uri('index.php');
+			$url->setQuery([
+                    'option' => 'com_ajax',
+                    'plugin' => 'wtcontentimagegalleryeditorsxtd',
+                    'group' => 'editors-xtd',
+                    'format' => 'html',
+                    'tmpl' => 'component',
+                    Session::getFormToken()  => '1',
+                    'editor' => $event->getEditorId(),
+            ]);
+			$button          = new Button(
+				$this->_name,
+				[
+					'action'  => 'modal',
+					'link'    => $url->toString(),
+					'text'    => '{Gallery}',
+					'icon'    => 'pictures',
+					'iconSVG' => '<svg width="24" height="24" viewBox="0 0 512 512"><path d="M464 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48'
+						. ' 48 48h416c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm-6 336H54a6 6 0 0 1-6-6V118a6 6 0 0 1 6-6h404a6 6'
+						. ' 0 0 1 6 6v276a6 6 0 0 1-6 6zM128 152c-22.091 0-40 17.909-40 40s17.909 40 40 40 40-17.909 40-40-17.909-40-40-40'
+						. 'zM96 352h320v-80l-87.515-87.515c-4.686-4.686-12.284-4.686-16.971 0L192 304l-39.515-39.515c-4.686-4.686-12.284-4'
+						. '.686-16.971 0L96 304v48z"></path></svg>',
+					'options' => [
+						'height'     => '400px',
+						'width'      => '800px',
+						'modalWidth' => '40',
+					],
+					// This is whole Plugin name, it is needed for keeping backward compatibility
+					'name' => 'editors-xtd_wtcontentimagegalleryeditorsxtd',
+				]
+			);
 
-			$button          = new CMSObject;
-			$button->modal   = true;
-			$button->class   = 'btn';
-			$button->link    = $link;
-			$button->text    = '{Gallery}';
-			$button->name    = 'pictures';
-			$button->options = [
-				'height'     => '400px',
-				'width'      => '800px',
-				'modalWidth' => '40',
-			];
-
-			return $button;
+			if ($button) {
+				$subject->add($button);
+			}
 		}
-
-		return;
 	}
 
 	/**
 	 * Method working with Joomla com_ajax. Return a HTML form for product selection
 	 * @return string product selection HTML form
-	 * @throws Exception
+	 * @throws \Exception
+     *
+     * @since 1.0.0
 	 */
-	public function onAjaxWtcontentimagegalleryeditorsxtd()
+	public function onAjaxWtcontentimagegalleryeditorsxtd(AjaxEvent $event)
 	{
 		$app = $this->getApplication();
 
@@ -118,7 +163,7 @@ final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin
 
 		$editor                             = $app->getInput()->get('editor', '');
 		$wt_wtcontentimagegalleryeditorsxtd = Folder::files(JPATH_SITE . "/plugins/content/wtcontentimagegallery/tmpl");
-		$layout_options                     = array();
+		$layout_options                     = [];
 		foreach ($wt_wtcontentimagegalleryeditorsxtd as $file)
 		{
 			if (File::getExt($file) == "php")
@@ -211,6 +256,8 @@ final class Wtcontentimagegalleryeditorsxtd extends CMSPlugin
             </div>
         </div>
         </div>
+
 		<?php
+
 	}
 }
